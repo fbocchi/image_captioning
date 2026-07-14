@@ -1,0 +1,111 @@
+# ==================================================
+# Python
+# ==================================================
+
+# Bytecode e cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Cache di strumenti Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# ==================================================
+# Ambienti virtuali
+# ==================================================
+
+.venv/
+venv/
+env/
+ENV/
+
+# File con variabili d'ambiente e segreti
+.env
+.env.*
+!.env.example
+
+# ==================================================
+# Packaging e build
+# ==================================================
+
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ==================================================
+# Jupyter
+# ==================================================
+
+.ipynb_checkpoints/
+
+# ==================================================
+# IDE ed editor
+# ==================================================
+
+.vscode/
+.idea/
+
+# File temporanei degli editor
+*.swp
+*.swo
+*~
+
+# ==================================================
+# Sistema operativo
+# ==================================================
+
+.DS_Store
+Thumbs.db
+
+# ==================================================
+# Dataset
+# ==================================================
+
+/data/
+
+# ==================================================
+# TensorFlow / Keras
+# ==================================================
+
+# Checkpoint di training
+/checkpoints/
+
+# Risultati, metriche, predizioni e grafici
+/results/
+
+# Log di TensorBoard
+/logs/
+tensorboard/
+
+# Modelli esportati
+/models/
+
+# Formati di modelli e pesi
+*.keras
+*.h5
+*.hdf5
+*.ckpt
+*.ckpt.*
+*.weights.h5
+
+# File TensorFlow generati
+checkpoint
+events.out.tfevents.*
+
+# SavedModel
+saved_model.pb
+saved_model.pbtxt
+
+# ==================================================
+# Log e file temporanei
+# ==================================================
+
+*.log
+tmp/
+temp/
