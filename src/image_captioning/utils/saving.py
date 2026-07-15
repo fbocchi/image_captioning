@@ -4,8 +4,9 @@ from keras.callbacks import History
 from keras.layers import TextVectorization
 
 from image_captioning.config.paths import (
-    TEXT_VECTORIZATION_CONFIG_FILE, HISTORY_FILE
+    TEXT_VECTORIZATION_CONFIG_FILE, HISTORY_FILE, FINAL_MODEL_FILE
 )
+from model import ShowAttendAndTell
 
 
 def save_text_vec_config(
@@ -36,3 +37,6 @@ def save_training_history(
             file,
             indent=4,
         )
+
+def save_model(model: ShowAttendAndTell):
+    model.save(FINAL_MODEL_FILE)
