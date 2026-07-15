@@ -16,7 +16,6 @@ from image_captioning.config.paths import (
 )
 
 
-# image_id, vectorized input caption, vectorized target caption
 TFRecordExample: TypeAlias = tuple[
     str,
     list[int],
