@@ -13,14 +13,20 @@ class ShowAttendAndTell(Model):
 
     def __init__(
             self,
+
             vocab_size: int,
+
             decoder_embedding_dim: int = 256,
             decoder_hidden_dim: int = 256,
+
             attention_hidden_dim: int = 256,
+
             encoder_output_dim: int = 256,
+
             encoder_dropout_rate: float = 0.2,
             decoder_dropout_rate: float = 0.3,
             deep_output_dropout_rate: float = 0.2,
+
             **kwargs
     ):
         super().__init__(**kwargs)
@@ -283,19 +289,17 @@ class ShowAttendAndTell(Model):
         config.update(
             {
                 "vocab_size": self.K,
-                "embedding_output_dim": self.m,
+
+                "decoder_embedding_dim": self.m,
                 "decoder_hidden_dim": self.n,
+
                 "attention_hidden_dim": self.d_att,
+
                 "encoder_output_dim": self.encoder_dim,
-                "encoder_dropout_rate": (
-                    self.encoder_dropout_rate
-                ),
-                "decoder_dropout_rate": (
-                    self.decoder_dropout_rate
-                ),
-                "deep_output_dropout_rate": (
-                    self.deep_output_dropout_rate
-                ),
+
+                "encoder_dropout_rate": self.encoder_dropout_rate,
+                "decoder_dropout_rate": self.decoder_dropout_rate,
+                "deep_output_dropout_rate": self.deep_output_dropout_rate
             }
         )
 

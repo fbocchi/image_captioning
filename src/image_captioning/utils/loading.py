@@ -19,6 +19,10 @@ def load_training_captions() -> list[str]:
         training_captions.extend(image_captions)
     return training_captions
 
+def load_test_split() -> dict[str, list[str]]:
+    split_json = load_split_json()
+    return split_json["test"]
+
 def load_text_vectorization_config():
     with open(TEXT_VECTORIZATION_CONFIG_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
