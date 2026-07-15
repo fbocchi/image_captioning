@@ -11,6 +11,7 @@ google-pasta==0.2.0
 grpcio==1.82.1
 h5py==3.16.0
 idna==3.18
+-e git+ssh://git@github.com/fbocchi/image_captioning.git@367ca7352f489fce54e807afa4312ca8d0bf4254#egg=image_captioning
 keras==3.15.0
 kiwisolver==1.5.0
 libclang==18.1.1
@@ -38,6 +39,7 @@ tensorboard-data-server==0.7.2
 tensorflow==2.16.1
 tensorflow-io-gcs-filesystem==0.37.1
 termcolor==3.3.0
+tqdm==4.68.4
 typing_extensions==4.16.0
 urllib3==2.7.0
 Werkzeug==3.1.8
