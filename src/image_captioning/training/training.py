@@ -12,8 +12,6 @@ def train_model(
     model: ShowAttendAndTell,
     train_set: Dataset,
     val_set: Dataset,
-    train_steps: int,
-    val_steps: int,
 ) -> History:
 
     compile_model(model)
@@ -23,9 +21,7 @@ def train_model(
 
     return model.fit(
         train_set,
-        steps_per_epoch=train_steps,
         validation_data=val_set,
-        validation_steps=val_steps,
         epochs=NUM_EPOCHS,
         callbacks=callbacks,
         verbose=TRAINING_VERBOSE,

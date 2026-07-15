@@ -1,5 +1,3 @@
-import math
-
 import tensorflow as tf
 
 from image_captioning.config.config import (
@@ -61,20 +59,10 @@ def main():
         shuffle=False
     )
 
-    train_steps = math.ceil(
-        30_000 / BATCH_SIZE
-    )
-
-    val_steps = math.ceil(
-        5_000 / BATCH_SIZE
-    )
-
     history = train_model(
         model,
         train_set,
         val_set=val_set,
-        train_steps=train_steps,
-        val_steps=val_steps,
     )
 
     save_training_history(history)
