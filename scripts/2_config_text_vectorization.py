@@ -12,7 +12,6 @@ def add_start_and_end_tokens(
         for caption in captions
     ]
 
-
 def compute_max_caption_length(
     captions: list[str],
 ) -> int:
@@ -21,19 +20,14 @@ def compute_max_caption_length(
         for caption in captions
     )
 
-
 def main() -> None:
     training_captions = load_training_captions()
 
-    training_captions = add_start_and_end_tokens(
-        training_captions
-    )
+    training_captions = add_start_and_end_tokens(training_captions)
 
     text_vectorizer = create_vectorizer(
         captions=training_captions,
-        output_sequence_length_fn=(
-            compute_max_caption_length
-        ),
+        output_sequence_length_fn=compute_max_caption_length
     )
 
     print(
@@ -41,18 +35,19 @@ def main() -> None:
         f"{len(training_captions)}"
     )
 
+    text_vec_config = text_vectorizer.get_config()
+
     print(
         f"Vocabulary size: "
-        f"{text_vectorizer.get_config()['vocabulary_size']}"
+        f"{text_vec_config['vocabulary_size']}"
     )
 
     print(
         f"Output sequence length: "
-        f"{text_vectorizer.get_config()['output_sequence_length']}"
+        f"{text_vec_config['output_sequence_length']}"
     )
 
     save_text_vec_config(text_vectorizer)
-
 
 
 if __name__ == "__main__":

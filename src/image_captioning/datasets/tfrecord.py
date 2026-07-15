@@ -31,28 +31,29 @@ TF_RECORD_FILES: dict[str, Path] = {
 def _bytes_feature(
     value: str,
 ) -> tf.train.Feature:
+
     return tf.train.Feature(
         bytes_list=tf.train.BytesList(
             value=[value.encode("utf-8")]
         )
     )
 
-
 def _int64_list_feature(
     values: list[int],
 ) -> tf.train.Feature:
+
     return tf.train.Feature(
         int64_list=tf.train.Int64List(
             value=values
         )
     )
 
-
 def serialize_example(
     image_id: str,
     input_caption: list[int],
     target_caption: list[int],
 ) -> bytes:
+
     features = {
         "image_id": _bytes_feature(
             image_id
@@ -73,14 +74,12 @@ def serialize_example(
 
     return example.SerializeToString()
 
-
 def create_records(
     split: dict[str, list[str]],
     text_vectorizer: tf.keras.layers.TextVectorization,
 ) -> Iterator[TFRecordExample]:
+
     for image_id, captions in split.items():
-        if not captions:
-            continue
 
         input_captions = [
             f"{START_TOKEN} {caption}"
@@ -105,21 +104,21 @@ def create_records(
             vectorized_target_captions,
             strict=True,
         ):
+
             yield (
                 image_id,
                 input_caption.numpy().tolist(),
                 target_caption.numpy().tolist(),
             )
 
-
 def count_records(
     split: dict[str, list[str]],
 ) -> int:
+
     return sum(
         len(captions)
         for captions in split.values()
     )
-
 
 def write_tfrecord(
     records: Iterable[TFRecordExample],
@@ -127,14 +126,9 @@ def write_tfrecord(
     total: int,
     description: str,
 ) -> None:
-    output_path.parent.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
 
-    with tf.io.TFRecordWriter(
-        str(output_path)
-    ) as writer:
+    with tf.io.TFRecordWriter(str(output_path)) as writer:
+
         for (
             image_id,
             input_caption,
@@ -145,6 +139,7 @@ def write_tfrecord(
             desc=description,
             unit="record",
         ):
+
             serialized_example = serialize_example(
                 image_id=image_id,
                 input_caption=input_caption,
@@ -153,15 +148,13 @@ def write_tfrecord(
 
             writer.write(serialized_example)
 
-
 def create_tfrecord_datasets(
-    splits: dict[
-        str,
-        dict[str, list[str]],
-    ],
+    splits: dict[str, dict[str, list[str]]],
     text_vectorizer: tf.keras.layers.TextVectorization,
 ) -> None:
+
     for split_name, output_path in TF_RECORD_FILES.items():
+
         split = splits[split_name]
 
         records = create_records(
