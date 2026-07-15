@@ -1,8 +1,9 @@
 import json
 
+import numpy as np
 from keras.layers import TextVectorization
 
-from image_captioning.config.paths import SPLIT_FILE, TEXT_VECTORIZATION_CONFIG_FILE
+from image_captioning.config.paths import SPLIT_FILE, TEXT_VECTORIZATION_CONFIG_FILE, FEATURES_FILE
 
 
 
@@ -26,3 +27,12 @@ def load_text_vectorization() -> TextVectorization:
     return TextVectorization.from_config(
         load_text_vectorization_config()
     )
+
+def load_vocab_size() -> int:
+    return load_text_vectorization_config()["vocabulary_size"]
+
+def load_output_sequence_length() -> int:
+    return load_text_vectorization_config()["output_sequence_length"]
+
+def load_features() -> dict[str, np.ndarray]:
+    return np.load(FEATURES_FILE, allow_pickle=True).item()

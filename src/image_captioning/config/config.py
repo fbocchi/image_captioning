@@ -21,11 +21,13 @@ DEEP_OUTPUT_DROPOUT = 0.2
 ############
 # TRAINING
 ############
+VERBOSE = 1
 
 RANDOM_SEED = 42
 
 BATCH_SIZE = 64
 NUM_EPOCHS = 50
+TRAINING_VERBOSE = VERBOSE
 
 # Optimizer
 LEARNING_RATE = 1e-3
@@ -36,7 +38,6 @@ LEARNING_RATE = 1e-3
 ############
 
 VAL_LOSS = "val_loss"
-VERBOSE = 1
 MIN = "min"
 
 # ModelCheckpoint
