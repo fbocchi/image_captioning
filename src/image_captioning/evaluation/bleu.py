@@ -12,6 +12,7 @@ def evaluate_bleu(
     text_vectorization: keras.layers.TextVectorization,
     max_caption_length: int,
 ) -> dict[str, float]:
+
     references: list[list[list[str]]] = []
     hypotheses: list[list[str]] = []
 
@@ -22,6 +23,7 @@ def evaluate_bleu(
         unit="image",
     ):
         if image_id not in feature_maps:
+
             raise KeyError(
                 f'Image ID "{image_id}" is missing '
                 "from the feature maps."
@@ -38,13 +40,8 @@ def evaluate_bleu(
             for caption in captions
         ]
 
-        references.append(
-            image_references
-        )
-
-        hypotheses.append(
-            generated_caption
-        )
+        references.append(image_references)
+        hypotheses.append(generated_caption)
 
     return {
         "BLEU-1": corpus_bleu(

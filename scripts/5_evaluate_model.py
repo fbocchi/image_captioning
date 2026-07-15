@@ -29,23 +29,15 @@ def main() -> None:
 
     test_split = load_test_split()
 
-    text_vectorization = (
-        load_text_vectorization()
-    )
+    text_vectorization = load_text_vectorization()
 
     evaluate_model(
         model=model,
         test_split=test_split,
         feature_maps=feature_maps,
-        text_vectorization=(
-            text_vectorization
-        ),
-        max_caption_length=(
-            MAX_CAPTION_LENGTH
-        ),
-        number_of_examples=(
-            NUMBER_OF_EXAMPLES
-        ),
+        text_vectorization=text_vectorization,
+        max_caption_length=MAX_CAPTION_LENGTH,
+        number_of_examples=NUMBER_OF_EXAMPLES
     )
 
 
