@@ -7,7 +7,7 @@ from image_captioning.config.config import (
     DEEP_OUTPUT_DROPOUT,
     ATTENTION_HIDDEN_DIM
 )
-from image_captioning.config.paths import TRAIN_TF_RECORD_FILE, VAL_TF_RECORD_FILE, FINAL_MODEL_FILE
+from image_captioning.config.paths import TRAIN_TF_RECORD_FILE, VAL_TF_RECORD_FILE
 from image_captioning.datasets.datasets import create_dataset
 from image_captioning.model import ShowAttendAndTell
 from image_captioning.training import train_model
