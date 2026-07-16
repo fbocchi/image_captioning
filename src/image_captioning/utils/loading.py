@@ -1,15 +1,22 @@
 import json
+from pathlib import Path
 
 import numpy as np
+
+from keras.callbacks import History
 from keras.layers import TextVectorization
 
-from image_captioning.config.paths import SPLIT_FILE, TEXT_VECTORIZATION_CONFIG_FILE, FEATURES_FILE
+from image_captioning.config.paths import (
+    SPLIT_FILE, TEXT_VECTORIZATION_CONFIG_FILE, FEATURES_FILE,
+    HISTORY_FILE, BLEU_SCORES_FILE, TEST_PREDICTIONS_FILE
+)
 
-
+def _load_json(path: Path):
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
 
 def load_split_json() -> dict[str, dict[str, list[str]]]:
-    with open(SPLIT_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    return _load_json(SPLIT_FILE)
 
 def load_training_captions() -> list[str]:
     split_json = load_split_json()
@@ -24,8 +31,7 @@ def load_test_split() -> dict[str, list[str]]:
     return split_json["test"]
 
 def load_text_vectorization_config():
-    with open(TEXT_VECTORIZATION_CONFIG_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    return _load_json(TEXT_VECTORIZATION_CONFIG_FILE)
 
 def load_text_vectorization() -> TextVectorization:
     return TextVectorization.from_config(
@@ -40,3 +46,12 @@ def load_output_sequence_length() -> int:
 
 def load_features() -> dict[str, np.ndarray]:
     return np.load(FEATURES_FILE, allow_pickle=True).item()
+
+def load_history() -> dict[str, list[float]]:
+    return _load_json(HISTORY_FILE)
+
+def load_bleu_scores() -> dict[str, float]:
+    return _load_json(BLEU_SCORES_FILE)
+
+def load_predictions(n: int = 10) -> dict[str, dict[str, str | list[str]]]:
+    return _load_json(TEST_PREDICTIONS_FILE)

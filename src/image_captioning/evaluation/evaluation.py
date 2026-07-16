@@ -10,10 +10,12 @@ def evaluate_model(
     feature_maps: dict,
     text_vectorization: keras.layers.TextVectorization,
     max_caption_length: int,
-    number_of_examples: int,
-) -> dict[str, float]:
+) -> tuple[
+    dict[str, float],
+    dict[str, dict[str, str | list[str]]]
+]:
 
-    scores = evaluate_bleu(
+    captions = generate_captions(
         model=model,
         test_split=test_split,
         feature_maps=feature_maps,
@@ -21,69 +23,37 @@ def evaluate_model(
         max_caption_length=max_caption_length,
     )
 
-    print_bleu_scores(scores=scores)
+    scores = evaluate_bleu(captions)
 
-    print_generated_captions(
-        model=model,
-        test_split=test_split,
-        feature_maps=feature_maps,
-        text_vectorization=text_vectorization,
-        max_caption_length=max_caption_length,
-        number_of_examples=number_of_examples,
-    )
-
-    return scores
+    return scores, captions
 
 
-def print_bleu_scores(
-    scores: dict[str, float],
-) -> None:
-
-    print("\n===== BLEU SCORES =====")
-
-    for metric, score in scores.items():
-
-        print(f"{metric}: {score:.4f}")
-
-
-def print_generated_captions(
+def generate_captions(
     model: ShowAttendAndTell,
     test_split: dict[str, list[str]],
     feature_maps: dict,
     text_vectorization: keras.layers.TextVectorization,
     max_caption_length: int,
-    number_of_examples: int,
-) -> None:
+) -> dict[str, dict[str, str | list[str]]]:
 
-    print("\n===== GENERATED CAPTIONS =====")
+    captions = {}
 
-    image_ids = list(test_split)
-
-    for image_id in image_ids[:number_of_examples]:
+    for image_id, references in test_split.items():
 
         if image_id not in feature_maps:
-
             raise KeyError(
-                f'Image ID "{image_id}" is missing '
-                "from the feature maps."
+                f'Image ID "{image_id}" is missing from the feature maps.'
             )
 
-        generated_caption = model.generate_caption(
+        generated = model.generate_caption(
             feature_map=feature_maps[image_id],
             vectorizer=text_vectorization,
-            max_caption_length=max_caption_length
+            max_caption_length=max_caption_length,
         )
 
+        captions[image_id] = {
+            "reference": references,
+            "generated": " ".join(generated),
+        }
 
-        print(f"\nImage: {image_id}")
-
-        print(
-            "Generated:",
-            " ".join(generated_caption),
-        )
-
-        print("References:")
-
-        for caption in test_split[image_id]:
-
-            print(f"- {caption}")
+    return captions

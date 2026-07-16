@@ -34,7 +34,7 @@ FIGURES_DIR = RESULTS_DIR / "figures"
 HISTORY_PNG_FILE = FIGURES_DIR / "history.png"
 LR_PNG_FILE = FIGURES_DIR / "lr.png"
 BLEU_SCORES_PNG_FILE = FIGURES_DIR / "bleu_scores.png"
-TEST_PREDICTIONS_PNG_FILE = FIGURES_DIR / "test_predictions.png"
+TEST_PREDICTIONS_PNGS_DIR = FIGURES_DIR / "test_predictions"
 
 HISTORY_DIR = RESULTS_DIR / "history"
 HISTORY_FILE = HISTORY_DIR / "history.json"
