@@ -1,11 +1,12 @@
+from image_captioning.config import SPLITS_FILE, VECTORIZER_CONFIG_FILE
 from image_captioning.datasets.tfrecord import create_tfrecord_datasets
-from image_captioning.utils.loading import load_split_json, load_text_vectorization
+from image_captioning.utils.loading import load_splits, load_vectorizer
 
 
 def main():
-    split = load_split_json()
-    text_vectorization = load_text_vectorization()
-    create_tfrecord_datasets(split, text_vectorization)
+    splits = load_splits(SPLITS_FILE)
+    text_vectorization = load_vectorizer(VECTORIZER_CONFIG_FILE)
+    create_tfrecord_datasets(splits, text_vectorization)
 
 
 if __name__ == "__main__":

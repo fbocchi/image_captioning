@@ -1,66 +1,27 @@
 import json
+from pathlib import Path
 
 from keras.callbacks import History
 from keras.layers import TextVectorization
 
-from image_captioning.config.paths import (
-    TEXT_VECTORIZATION_CONFIG_FILE, HISTORY_FILE, FINAL_MODEL_FILE,
-    BLEU_SCORES_FILE, TEST_PREDICTIONS_FILE
-)
 from model import ShowAttendAndTell
 
 
-def save_text_vec_config(
-    text_vec: TextVectorization,
-) -> None:
+def _save_json(data, to: Path) -> None:
+    with to.open(mode="w", encoding="utf-8") as file:
+        json.dump(data, file, indent=4)
 
-    with TEXT_VECTORIZATION_CONFIG_FILE.open(
-        mode="w",
-        encoding="utf-8",
-    ) as file:
-        json.dump(
-            text_vec.get_config(),
-            file,
-            indent=4,
-        )
+def save_vectorizer_config(vectorizer: TextVectorization, to: Path) -> None:
+    _save_json(vectorizer.get_config(), to=to)
 
-def save_training_history(
-    history: History,
-) -> None:
+def save_training_history(history: History, to: Path) -> None:
+    _save_json(history.history, to=to)
 
-    with HISTORY_FILE.open(
-        mode="w",
-        encoding="utf-8",
-    ) as file:
-        json.dump(
-            history.history,
-            file,
-            indent=4,
-        )
+def save_model(model: ShowAttendAndTell, to: Path) -> None:
+    model.save(to)
 
-def save_model(model: ShowAttendAndTell):
-    model.save(FINAL_MODEL_FILE)
+def save_bleu_scores(scores: dict[str, float], to: Path) -> None:
+    _save_json(scores, to=to)
 
-def save_bleu_scores(scores):
-
-    with BLEU_SCORES_FILE.open(
-        mode="w",
-        encoding="utf-8",
-    ) as file:
-        json.dump(
-            scores,
-            file,
-            indent=4,
-        )
-
-def save_predictions(predictions):
-
-    with TEST_PREDICTIONS_FILE.open(
-        mode="w",
-        encoding="utf-8",
-    ) as file:
-        json.dump(
-            predictions,
-            file,
-            indent=4,
-        )
+def save_predictions(predictions, to: Path) -> None:
+    _save_json(predictions, to=to)
