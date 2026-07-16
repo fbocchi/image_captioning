@@ -26,7 +26,7 @@ TEST_TF_RECORD_FILE = DATA_DIR / "test.tfrecord"
 # RESOURCES
 
 SPLITS_FILE = RESOURCES_DIR / "splits.json"
-VECTORIZER_CONFIG_FILE = RESOURCES_DIR / "text_vectorization_config.json"
+VECTORIZER_CONFIG_FILE = RESOURCES_DIR / "vectorizer_config.json"
 
 # RESULTS
 
