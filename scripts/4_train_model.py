@@ -1,36 +1,98 @@
+import numpy as np
 import tensorflow as tf
+from tensorflow.keras.optimizers import Adam
 
-from config import VECTORIZER_CONFIG_FILE
 from image_captioning.config import (
-    RANDOM_SEED, BATCH_SIZE,
-    ENCODER_OUTPUT_DIM, ENCODER_DROPOUT,
-    DECODER_EMBEDDING_DIM, DECODER_HIDDEN_DIM, DECODER_DROPOUT,
-    DEEP_OUTPUT_DROPOUT,
     ATTENTION_HIDDEN_DIM,
-
-    VECTORIZER_CONFIG_FILE, FEATURES_FILE,
-    HISTORY_FILE, FINAL_MODEL_FILE
+    BATCH_SIZE,
+    DECODER_DROPOUT,
+    DECODER_EMBEDDING_DIM,
+    DECODER_HIDDEN_DIM,
+    DEEP_OUTPUT_DROPOUT,
+    ENCODER_OUTPUT_DIM,
+    ENCODER_DROPOUT,
+    FEATURES_FILE,
+    FINAL_MODEL_FILE,
+    HISTORY_FILE,
+    LEARNING_RATE,
+    RANDOM_SEED,
+    TRAIN_TF_RECORD_FILE,
+    VAL_TF_RECORD_FILE,
+    VECTORIZER_CONFIG_FILE,
 )
-from image_captioning.config.paths import TRAIN_TF_RECORD_FILE, VAL_TF_RECORD_FILE
-from image_captioning.datasets.datasets import create_dataset
+from image_captioning.datasets import create_dataset_from_tfrecords
 from image_captioning.model import ShowAttendAndTell
 from image_captioning.training import train_model
-from image_captioning.utils.loading import load_vectorizer_config, load_features
-from image_captioning.utils.saving import save_training_history, save_model
+from image_captioning.utils import (
+    load_features,
+    load_vectorizer_config,
+    save_model,
+    save_training_history
+)
 
 
 def load_vec_vocab_size() -> int:
-    return load_vectorizer_config(VECTORIZER_CONFIG_FILE)["vocabulary_size"]
+    return load_vectorizer_config(
+        VECTORIZER_CONFIG_FILE
+    )["vocabulary_size"]
+
 
 def load_vec_output_sequence_length() -> int:
-    return load_vectorizer_config(VECTORIZER_CONFIG_FILE)["output_sequence_length"]
+    return load_vectorizer_config(
+        VECTORIZER_CONFIG_FILE
+    )["output_sequence_length"]
+
+
+def parse_caption_record(record: tf.Tensor, captions_length: int):
+    example = tf.io.parse_single_example(
+        record,
+        {
+            "image_id": tf.io.FixedLenFeature([], tf.string),
+            "input_caption": tf.io.FixedLenFeature([captions_length], tf.int64),
+            "target_caption": tf.io.FixedLenFeature([captions_length], tf.int64),
+        },
+    )
+
+    return (
+        example["image_id"].numpy().decode(),
+        example["input_caption"].numpy(),
+        example["target_caption"].numpy(),
+    )
+
+
+def create_train_and_val_sets(
+        image_features: dict[str, np.ndarray],
+        captions_length: int
+) -> tuple[tf.data.Dataset, tf.data.Dataset]:
+    train_set = create_dataset_from_tfrecords(
+        TRAIN_TF_RECORD_FILE,
+        image_features=image_features,
+        parse_fn=lambda record: parse_caption_record(
+            record,
+            captions_length,
+        ),
+        batch_size=BATCH_SIZE,
+        shuffle=True,
+        seed=RANDOM_SEED,
+    )
+
+    val_set = create_dataset_from_tfrecords(
+        VAL_TF_RECORD_FILE,
+        image_features=image_features,
+        parse_fn=lambda record: parse_caption_record(
+            record,
+            captions_length,
+        ),
+        batch_size=BATCH_SIZE,
+    )
+
+    return train_set, val_set
+
 
 def main():
-
     tf.keras.utils.set_random_seed(RANDOM_SEED)
 
     vocab_size = load_vec_vocab_size()
-
     output_sequence_length = load_vec_output_sequence_length()
 
     features = load_features(FEATURES_FILE)
@@ -50,27 +112,16 @@ def main():
         attention_hidden_dim=ATTENTION_HIDDEN_DIM,
     )
 
-    train_set = create_dataset(
-        tfrecord_path=TRAIN_TF_RECORD_FILE,
-        image_features=features,
-        text_vec_output_sequence_length=output_sequence_length,
-        batch_size=BATCH_SIZE,
-        shuffle=True,
-        seed=RANDOM_SEED,
-    )
-
-    val_set = create_dataset(
-        tfrecord_path=VAL_TF_RECORD_FILE,
-        image_features=features,
-        text_vec_output_sequence_length=output_sequence_length,
-        batch_size=BATCH_SIZE,
-        shuffle=False
+    train_set, val_set = create_train_and_val_sets(
+        features,
+        captions_length=output_sequence_length
     )
 
     history = train_model(
         model,
         train_set,
         val_set=val_set,
+        optimizer=Adam(LEARNING_RATE)
     )
 
     save_training_history(history, to=HISTORY_FILE)

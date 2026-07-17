@@ -1,16 +1,9 @@
-from tensorflow.keras.optimizers import Adam
-
-from image_captioning.config.config import LEARNING_RATE
-from image_captioning.model import ShowAttendAndTell
+from tensorflow.keras.optimizers import Optimizer
 
 from .masked_loss import masked_loss
 
+from image_captioning.model import ShowAttendAndTell
 
-def compile_model(
-        model: ShowAttendAndTell,
-) -> None:
 
-    model.compile(
-        optimizer=Adam(LEARNING_RATE),
-        loss=masked_loss,
-    )
+def compile_model(model: ShowAttendAndTell, optimizer: Optimizer) -> None:
+    model.compile(optimizer=optimizer, loss=masked_loss,)

@@ -1,31 +1,28 @@
-from image_captioning.utils.loading import (
-    load_history, load_bleu_scores, load_predictions
-)
-
-from image_captioning.visualization import (
-    plot_history,
-    plot_bleu_scores,
-    show_predictions,
-)
-
-from config.paths import (
-    HISTORY_FILE,
+from image_captioning.config import (
     BLEU_SCORES_FILE,
-    TEST_PREDICTIONS_FILE,
-    HISTORY_PNG_FILE,
     BLEU_SCORES_PNG_FILE,
-    TEST_PREDICTIONS_PNGS_DIR,
+    HISTORY_FILE,
+    HISTORY_PNG_FILE,
     IMAGES_DIR,
+    TEST_PREDICTIONS_FILE,
+    TEST_PREDICTIONS_PNGS_DIR,
+)
+from image_captioning.utils import (
+    load_bleu_scores,
+    load_history,
+    load_predictions
+)
+from image_captioning.visualization import (
+    plot_bleu_scores,
+    plot_history,
+    show_predictions,
 )
 
 
 def main():
-
-    history = load_history()
-
-    bleu_scores = load_bleu_scores()
-
-    predictions = load_predictions()
+    history = load_history(HISTORY_FILE)
+    bleu_scores = load_bleu_scores(BLEU_SCORES_FILE)
+    predictions = load_predictions(TEST_PREDICTIONS_FILE)
 
     plot_history(history, output_file=HISTORY_PNG_FILE)
 

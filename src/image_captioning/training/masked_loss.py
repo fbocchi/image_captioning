@@ -3,7 +3,6 @@ import tensorflow as tf
 
 @tf.keras.utils.register_keras_serializable()
 def masked_loss(y_true, y_pred):
-
     loss = tf.keras.losses.sparse_categorical_crossentropy(
         y_true,
         y_pred,
@@ -22,13 +21,6 @@ def masked_loss(y_true, y_pred):
     )
 
     return tf.math.divide_no_nan(
-        tf.reduce_sum(
-            loss
-        ),
-        tf.reduce_sum(
-            tf.cast(
-                mask,
-                loss.dtype,
-            )
-        ),
+        tf.reduce_sum(loss),
+        tf.reduce_sum(tf.cast(mask, loss.dtype))
     )
