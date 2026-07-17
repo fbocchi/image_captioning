@@ -10,7 +10,7 @@ from image_captioning.evaluation.evaluation import (
 from image_captioning.utils.loading import (
     load_features,
     load_test_split,
-    load_text_vectorization,
+    load_vectorizer,
 )
 from image_captioning.utils.saving import save_bleu_scores, save_predictions
 
@@ -56,7 +56,7 @@ def main() -> None:
 
     test_split = load_test_split()
 
-    text_vectorization = load_text_vectorization()
+    text_vectorization = load_vectorizer()
 
     bleu_scores, captions = evaluate_model(
         model=model,

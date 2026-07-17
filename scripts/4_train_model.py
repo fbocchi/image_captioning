@@ -1,31 +1,39 @@
 import tensorflow as tf
 
-from image_captioning.config.config import (
+from config import VECTORIZER_CONFIG_FILE
+from image_captioning.config import (
     RANDOM_SEED, BATCH_SIZE,
     ENCODER_OUTPUT_DIM, ENCODER_DROPOUT,
     DECODER_EMBEDDING_DIM, DECODER_HIDDEN_DIM, DECODER_DROPOUT,
     DEEP_OUTPUT_DROPOUT,
-    ATTENTION_HIDDEN_DIM
+    ATTENTION_HIDDEN_DIM,
+
+    VECTORIZER_CONFIG_FILE, FEATURES_FILE,
+    HISTORY_FILE, FINAL_MODEL_FILE
 )
 from image_captioning.config.paths import TRAIN_TF_RECORD_FILE, VAL_TF_RECORD_FILE
 from image_captioning.datasets.datasets import create_dataset
 from image_captioning.model import ShowAttendAndTell
 from image_captioning.training import train_model
-from image_captioning.utils.loading import load_vocab_size, load_output_sequence_length, load_features
+from image_captioning.utils.loading import load_vectorizer_config, load_features
 from image_captioning.utils.saving import save_training_history, save_model
 
 
+def load_vec_vocab_size() -> int:
+    return load_vectorizer_config(VECTORIZER_CONFIG_FILE)["vocabulary_size"]
+
+def load_vec_output_sequence_length() -> int:
+    return load_vectorizer_config(VECTORIZER_CONFIG_FILE)["output_sequence_length"]
+
 def main():
 
-    tf.keras.utils.set_random_seed(
-        RANDOM_SEED
-    )
+    tf.keras.utils.set_random_seed(RANDOM_SEED)
 
-    vocab_size = load_vocab_size()
+    vocab_size = load_vec_vocab_size()
 
-    output_sequence_length = load_output_sequence_length()
+    output_sequence_length = load_vec_output_sequence_length()
 
-    features = load_features()
+    features = load_features(FEATURES_FILE)
 
     model = ShowAttendAndTell(
         vocab_size=vocab_size,
@@ -65,9 +73,9 @@ def main():
         val_set=val_set,
     )
 
-    save_training_history(history)
+    save_training_history(history, to=HISTORY_FILE)
 
-    save_model(model)
+    save_model(model, to=FINAL_MODEL_FILE)
 
 
 if __name__ == "__main__":
