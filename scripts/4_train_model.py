@@ -2,15 +2,14 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
 
-from image_captioning.config import (
+from config import (
     ATTENTION_HIDDEN_DIM,
     BATCH_SIZE,
-    DECODER_DROPOUT,
-    DECODER_EMBEDDING_DIM,
     DECODER_HIDDEN_DIM,
-    DEEP_OUTPUT_DROPOUT,
+    DECODER_OUTPUT_DROPOUT,
+    EMBEDDING_DIM,
+    EMBEDDING_OUTPUT_DROPOUT,
     ENCODER_OUTPUT_DIM,
-    ENCODER_DROPOUT,
     FEATURES_FILE,
     FINAL_MODEL_FILE,
     HISTORY_FILE,
@@ -99,17 +98,12 @@ def main():
 
     model = ShowAttendAndTell(
         vocab_size=vocab_size,
-
-        encoder_output_dim=ENCODER_OUTPUT_DIM,
-        encoder_dropout_rate=ENCODER_DROPOUT,
-
-        decoder_embedding_dim=DECODER_EMBEDDING_DIM,
-        decoder_hidden_dim=DECODER_HIDDEN_DIM,
-        decoder_dropout_rate=DECODER_DROPOUT,
-
-        deep_output_dropout_rate=DEEP_OUTPUT_DROPOUT,
-
         attention_hidden_dim=ATTENTION_HIDDEN_DIM,
+        embedding_dim=EMBEDDING_DIM,
+        embedding_output_dropout_rate=EMBEDDING_OUTPUT_DROPOUT,
+        decoder_hidden_dim=DECODER_HIDDEN_DIM,
+        decoder_output_dropout_rate=DECODER_OUTPUT_DROPOUT,
+        encoder_output_dim=ENCODER_OUTPUT_DIM,
     )
 
     train_set, val_set = create_train_and_val_sets(

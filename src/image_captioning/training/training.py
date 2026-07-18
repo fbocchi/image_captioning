@@ -5,7 +5,7 @@ from tensorflow.keras.optimizers import Optimizer
 from .compilation import compile_model
 from .callbacks import get_callbacks
 
-from image_captioning.config import NUM_EPOCHS, TRAINING_VERBOSE
+from config import NUM_EPOCHS, TRAINING_VERBOSE
 from image_captioning.model import ShowAttendAndTell
 
 

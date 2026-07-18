@@ -5,7 +5,7 @@ from keras.callbacks import (
     ReduceLROnPlateau,
 )
 
-from image_captioning.config import (
+from config import (
     BEST_MODEL_FILE,
 
     CHECKPOINT_MODE,

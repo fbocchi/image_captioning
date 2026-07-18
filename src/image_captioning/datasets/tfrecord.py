@@ -5,7 +5,7 @@ from typing import TypeAlias
 import tensorflow as tf
 from tqdm import tqdm
 
-from image_captioning.config import (
+from config import (
     END_TOKEN,
     START_TOKEN,
 )

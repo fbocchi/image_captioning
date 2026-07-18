@@ -1,4 +1,4 @@
-from image_captioning.config import (
+from config import (
     BLEU_SCORES_FILE,
     SPLITS_FILE,
     TEST_PREDICTIONS_FILE,

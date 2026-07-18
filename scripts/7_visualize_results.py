@@ -1,4 +1,4 @@
-from image_captioning.config import (
+from config import (
     BLEU_SCORES_FILE,
     BLEU_SCORES_PNG_FILE,
     HISTORY_FILE,

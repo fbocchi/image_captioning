@@ -6,7 +6,7 @@ from keras.layers import Layer
 @tf.keras.utils.register_keras_serializable()
 class BahdanauAttention(Layer):
 
-    def __init__(self, attention_dim, **kwargs):
+    def __init__(self, attention_dim: int, **kwargs):
         super().__init__(**kwargs)
 
         self.d_att = attention_dim
@@ -16,12 +16,12 @@ class BahdanauAttention(Layer):
         self.b = None
         self.v = None
 
-    def build(self, input_shape):
+    def build(self, input_shape) -> None:
 
         A_shape, h_t_1_shape = input_shape
 
-        D = A_shape[-1] # annotation dim
-        n = h_t_1_shape[-1] # hidden dimension
+        D = A_shape[-1]  # annotation dim
+        n = h_t_1_shape[-1]  # hidden dimension
 
         self.W_a = self.add_weight(
             name="W_a",
@@ -56,8 +56,9 @@ class BahdanauAttention(Layer):
     def call(
             self,
             inputs,
-            training=False,
-    ):
+            #A: tf.Tensor,
+            #h_t_1: tf.Tensor
+    ) -> tuple[tf.Tensor, tf.Tensor]:
 
         A, h_t_1 = inputs
 
@@ -135,26 +136,26 @@ class BahdanauAttention(Layer):
 
     def get_config(self):
         config = super().get_config()
-        config.update({ "attention_dim": self.d_att })
+
+        config.update(
+            {
+                "attention_dim": self.d_att,
+            }
+        )
+
         return config
 
     def compute_output_shape(
             self,
             input_shape,
     ):
-        A_shape, _ = input_shape
+        A_shape, h_t_1_shape = input_shape
 
         B = A_shape[0]
         L = A_shape[1]
         D = A_shape[2]
 
         return (
-            (
-                B,
-                D,
-            ),
-            (
-                B,
-                L,
-            ),
+            (B, D),
+            (B, L),
         )

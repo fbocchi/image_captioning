@@ -1,7 +1,7 @@
 import numpy as np
 import keras
 
-from image_captioning.config import (
+from config import (
     BEST_MODEL_FILE,
     FEATURES_FILE,
     SPLITS_FILE,

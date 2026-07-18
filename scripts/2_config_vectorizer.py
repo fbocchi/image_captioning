@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from image_captioning.config import (
+from config import (
     END_TOKEN,
     SPLITS_FILE,
     START_TOKEN,

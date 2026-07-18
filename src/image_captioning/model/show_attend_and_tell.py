@@ -1,10 +1,12 @@
+import numpy as np
 import tensorflow as tf
 
 from keras import Model
-from keras.layers import Dense
+from keras.layers import Dense, Dropout, Embedding, TextVectorization
 
 from .bahdanau_attention import BahdanauAttention
 from .decoder import Decoder
+from .deep_output import DeepOutput
 from .encoder import Encoder
 
 
@@ -14,30 +16,28 @@ class ShowAttendAndTell(Model):
     def __init__(
         self,
         vocab_size: int,
-        decoder_embedding_dim: int = 256,
-        decoder_hidden_dim: int = 256,
         attention_hidden_dim: int = 256,
+        embedding_dim: int = 256,
+        embedding_output_dropout_rate: float = 0.2,
+        decoder_hidden_dim: int = 256,
+        decoder_output_dropout_rate: float = 0.3,
         encoder_output_dim: int = 256,
-        encoder_dropout_rate: float = 0.2,
-        decoder_dropout_rate: float = 0.3,
-        deep_output_dropout_rate: float = 0.2,
         **kwargs,
     ):
         super().__init__(**kwargs)
 
         self.K = vocab_size
-        self.m = decoder_embedding_dim
+        self.m = embedding_dim
         self.n = decoder_hidden_dim
         self.d_att = attention_hidden_dim
 
-        self.encoder_dim = encoder_output_dim
-        self.encoder_dropout_rate = encoder_dropout_rate
-        self.decoder_dropout_rate = decoder_dropout_rate
-        self.deep_output_dropout_rate = deep_output_dropout_rate
+        self.encoder_output_dim = encoder_output_dim
+
+        self.embedding_output_dropout_rate = embedding_output_dropout_rate
+        self.decoder_output_dropout_rate = decoder_output_dropout_rate
 
         self.encoder = Encoder(
-            output_dim=self.encoder_dim,
-            dropout_rate=self.encoder_dropout_rate,
+            output_dim=self.encoder_output_dim,
             name="encoder",
         )
 
@@ -46,13 +46,30 @@ class ShowAttendAndTell(Model):
             name="bahdanau_attention",
         )
 
+        self.embedding = Embedding(
+            input_dim=self.K,
+            output_dim=self.m,
+            name="embedding",
+        )
+
+        self.embedding_output_dropout = Dropout(
+            rate=self.embedding_output_dropout_rate,
+            name="embedding_output_dropout",
+        )
+
         self.decoder = Decoder(
-            vocab_size=self.K,
-            embedding_dim=self.m,
             hidden_dim=self.n,
-            dropout_rate=self.decoder_dropout_rate,
-            deep_output_dropout_rate=self.deep_output_dropout_rate,
             name="decoder",
+        )
+
+        self.decoder_output_dropout = Dropout(
+            rate=self.decoder_output_dropout_rate,
+            name="decoder_output_dropout",
+        )
+
+        self.deep_output = DeepOutput(
+            vocab_size=self.K,
+            name="deep_output",
         )
 
         self.init_h = Dense(
@@ -67,31 +84,50 @@ class ShowAttendAndTell(Model):
             name="init_c",
         )
 
-    def call(self, inputs, training=False):
+    def call(
+            self,
+            inputs,
+            training: bool = False,
+    ) -> tf.Tensor:
 
         feature_maps, captions = inputs
 
-        A = self.encoder(
-            feature_maps,
-            training=training,
-        )
+        A = self.encoder(feature_maps)
 
-        h_t_1, c_t_1 = self.compute_initial_decoder_states(A)  # h_{-1}, c_{-1}
+        h_t_1, c_t_1 = self.compute_initial_decoder_states(A)
 
         outputs = []
 
-        T = captions.shape[1]  # captions.shape = (B, T)
+        T = captions.shape[1]
 
         for t in range(T):
 
             w_t = captions[:, t]
 
-            probs, h_t, c_t, alpha_t = self.decode_step(
+            e_t = self.embedding(w_t)
+
+            e_t = self.embedding_output_dropout(
+                e_t,
+                training=training,
+            )
+
+            z_t, alpha_t, h_t, c_t = self.decode_step(
                 A=A,
-                w_t=w_t,
+                e_t=e_t,
                 h_t_1=h_t_1,
                 c_t_1=c_t_1,
                 training=training,
+            )
+
+            h_t_drop = self.decoder_output_dropout(
+                h_t,
+                training=training,
+            )
+
+            probs = self.deep_output(
+                (h_t_drop,
+                z_t,
+                e_t),
             )
 
             outputs.append(probs)
@@ -99,50 +135,54 @@ class ShowAttendAndTell(Model):
             h_t_1 = h_t
             c_t_1 = c_t
 
-        outputs = tf.stack(
-            outputs,
-            axis=1,
-        )
-
-        return outputs
+        return tf.stack(outputs, axis=1)
 
     def decode_step(
-        self,
-        A,
-        w_t,
-        h_t_1,
-        c_t_1,
-        training=False,
-    ):
+            self,
+            A: tf.Tensor,
+            e_t: tf.Tensor,
+            h_t_1: tf.Tensor,
+            c_t_1: tf.Tensor,
+            training: bool = False,
+    ) -> tuple[
+        tf.Tensor,
+        tf.Tensor,
+        tf.Tensor,
+        tf.Tensor,
+    ]:
+        z_t, alpha_t = self.attention((A, h_t_1))
 
-        z_t, alpha_t = self.attention(
-            [A, h_t_1],
+        h_t, c_t = self.decoder(
+            (e_t,
+            z_t,
+            h_t_1,
+            c_t_1),
             training=training,
         )
 
-        probs, h_t, c_t = self.decoder(
-            [w_t, z_t, h_t_1, c_t_1],
-            training=training,
-        )
+        return z_t, alpha_t, h_t, c_t
 
-        return probs, h_t, c_t, alpha_t
-
-    def compute_initial_decoder_states(self, A):
+    def compute_initial_decoder_states(
+            self,
+            A: tf.Tensor,
+    ) -> tuple[tf.Tensor, tf.Tensor]:
 
         mean_A = tf.reduce_mean(
             A,
             axis=1,
         )
 
-        return self.init_h(mean_A), self.init_c(mean_A)
+        return (
+            self.init_h(mean_A),
+            self.init_c(mean_A),
+        )
 
     def generate_captions(
-        self,
-        feature_maps,
-        vectorizer,
-        max_caption_length: int,
+            self,
+            feature_maps: np.ndarray,
+            vectorizer: TextVectorization,
+            max_caption_length: int,
     ) -> list[list[str]]:
-
         vocabulary = vectorizer.get_vocabulary()
 
         word_to_index = {
@@ -150,15 +190,32 @@ class ShowAttendAndTell(Model):
             for index, word in enumerate(vocabulary)
         }
 
-        start_token_id = word_to_index["[START]"]
-        end_token_id = word_to_index["[END]"]
+        generated_token_ids = self.generate_caption_ids(
+            feature_maps=feature_maps,
+            start_token_id=word_to_index["[START]"],
+            end_token_id=word_to_index["[END]"],
+            max_caption_length=max_caption_length,
+        )
+
+        return [
+            [
+                vocabulary[token_id]
+                for token_id in caption
+            ]
+            for caption in generated_token_ids
+        ]
+
+    def generate_caption_ids(
+            self,
+            feature_maps: np.ndarray,
+            start_token_id: int,
+            end_token_id: int,
+            max_caption_length: int,
+    ) -> list[list[int]]:
 
         B = feature_maps.shape[0]
 
-        A = self.encoder(
-            feature_maps,
-            training=False,
-        )
+        A = self.encoder(feature_maps)
 
         h_t_1, c_t_1 = self.compute_initial_decoder_states(A)
 
@@ -167,18 +224,26 @@ class ShowAttendAndTell(Model):
             start_token_id,
         )
 
-        generated_tokens = [[] for _ in range(B)]
+        generated_token_ids = [[] for _ in range(B)]
 
         finished = [False] * B
 
         for _ in range(max_caption_length):
 
-            probs, h_t, c_t, _ = self.decode_step(
+            e_t = self.embedding(current_token_ids)
+
+            z_t, _, h_t, c_t = self.decode_step(
                 A=A,
-                w_t=current_token_ids,
+                e_t=e_t,
                 h_t_1=h_t_1,
                 c_t_1=c_t_1,
                 training=False,
+            )
+
+            probs = self.deep_output(
+                (h_t,
+                z_t,
+                e_t),
             )
 
             current_token_ids = tf.argmax(
@@ -199,9 +264,7 @@ class ShowAttendAndTell(Model):
                     continue
 
                 if token_id != 0:
-                    generated_tokens[i].append(
-                        vocabulary[token_id]
-                    )
+                    generated_token_ids[i].append(token_id)
 
             if all(finished):
                 break
@@ -209,7 +272,7 @@ class ShowAttendAndTell(Model):
             h_t_1 = h_t
             c_t_1 = c_t
 
-        return generated_tokens
+        return generated_token_ids
 
     def get_config(self):
 
@@ -218,13 +281,12 @@ class ShowAttendAndTell(Model):
         config.update(
             {
                 "vocab_size": self.K,
-                "decoder_embedding_dim": self.m,
-                "decoder_hidden_dim": self.n,
                 "attention_hidden_dim": self.d_att,
-                "encoder_output_dim": self.encoder_dim,
-                "encoder_dropout_rate": self.encoder_dropout_rate,
-                "decoder_dropout_rate": self.decoder_dropout_rate,
-                "deep_output_dropout_rate": self.deep_output_dropout_rate,
+                "embedding_dim": self.m,
+                "decoder_hidden_dim": self.n,
+                "encoder_output_dim": self.encoder_output_dim,
+                "embedding_output_dropout_rate": self.embedding_output_dropout_rate,
+                "decoder_output_dropout_rate": self.decoder_output_dropout_rate,
             }
         )
 

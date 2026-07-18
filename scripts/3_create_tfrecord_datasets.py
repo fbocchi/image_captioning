@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from image_captioning.config import (
+from config import (
     SPLITS_FILE,
     LEFT_TF_RECORD_FILE,
     TRAIN_TF_RECORD_FILE,

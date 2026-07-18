@@ -1,25 +1,19 @@
 import tensorflow as tf
 
-from keras.layers import (
-    Dense,
-    Dropout,
-    Layer,
-)
+from keras.layers import Dense, Layer
 
 
 @tf.keras.utils.register_keras_serializable()
 class Encoder(Layer):
 
     def __init__(
-            self,
-            output_dim: int = 256,
-            dropout_rate: float = 0.2,
-            **kwargs,
+        self,
+        output_dim: int = 256,
+        **kwargs,
     ):
         super().__init__(**kwargs)
 
         self.output_dim = output_dim
-        self.dropout_rate = dropout_rate
 
         self.projection = Dense(
             units=self.output_dim,
@@ -27,19 +21,12 @@ class Encoder(Layer):
             name="projection",
         )
 
-        self.dropout = Dropout(
-            rate=self.dropout_rate,
-            name="dropout",
-        )
-
     def call(
-            self,
-            feature_maps,
-            training=False,
-    ):
-        shape = tf.shape(
-            feature_maps
-        )
+        self,
+        feature_maps: tf.Tensor,
+    ) -> tf.Tensor:
+
+        shape = tf.shape(feature_maps)
 
         B = shape[0]
         H = shape[1]
@@ -51,27 +38,14 @@ class Encoder(Layer):
 
         features = tf.reshape(
             feature_maps,
-            shape=(
-                B,
-                L,
-                D,
-            ),
+            (B, L, D),
         )
 
-        features = self.projection(
-            features
-        )
-
-        features = self.dropout(
-            features,
-            training=training,
-        )
-
-        return features
+        return self.projection(features)
 
     def compute_output_shape(
-            self,
-            input_shape,
+        self,
+        input_shape,
     ):
         B, H, W, _ = input_shape
 
@@ -93,7 +67,6 @@ class Encoder(Layer):
         config.update(
             {
                 "output_dim": self.output_dim,
-                "dropout_rate": self.dropout_rate,
             }
         )
 
