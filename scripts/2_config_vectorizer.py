@@ -1,6 +1,4 @@
 from pathlib import Path
-from typing import Callable
-
 
 from image_captioning.config import (
     END_TOKEN,
