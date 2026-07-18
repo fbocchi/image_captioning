@@ -8,7 +8,7 @@ from image_captioning.config import (
     TEST_PREDICTIONS_FILE,
     VECTORIZER_CONFIG_FILE,
 )
-from image_captioning.generation import generate_captions
+from image_captioning.prediction import generate_captions
 from image_captioning.utils import (
     load_features,
     load_test_split,
@@ -20,7 +20,7 @@ from image_captioning.utils import (
 MAX_CAPTION_LENGTH = 39
 
 
-def generate_test_set_captions(
+def predict_captions_for_test_set(
     model,
     test_split: dict[str, list[str]],
     feature_maps: dict[str, np.ndarray],
@@ -61,12 +61,12 @@ def main() -> None:
     test_split = load_test_split(SPLITS_FILE)
     vectorizer = load_vectorizer(VECTORIZER_CONFIG_FILE)
 
-    predictions = generate_test_set_captions(
+    predictions = predict_captions_for_test_set(
         model=model,
         test_split=test_split,
         feature_maps=feature_maps,
         vectorizer=vectorizer,
-        max_caption_length=MAX_CAPTION_LENGTH,
+        max_caption_length=MAX_CAPTION_LENGTH
     )
 
     save_predictions(

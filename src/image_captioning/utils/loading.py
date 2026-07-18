@@ -21,19 +21,20 @@ def load_split(path: Path, split_name: str) -> dict[str, list[str]]:
     return splits[split_name]
 
 
-def load_training_captions(path: Path) -> list[str]:
-    split = load_split(path, "train")
+def load_split_images(path: Path, split_name: str) -> list[str]:
+    split = load_split(path, split_name)
+    return list(split.keys())
 
-    training_captions = []
+
+def load_split_captions(path: Path, split_name: str) -> list[str]:
+    split = load_split(path, split_name)
+
+    captions = []
 
     for _, image_captions in split.items():
-        training_captions.extend(image_captions)
+        captions.extend(image_captions)
 
-    return training_captions
-
-
-def load_test_split(path: Path) -> dict[str, list[str]]:
-    return load_split(path, "test")
+    return captions
 
 
 def load_vectorizer_config(path: Path) -> dict:

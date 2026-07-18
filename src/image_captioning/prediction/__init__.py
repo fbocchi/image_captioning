@@ -1,0 +1,1 @@
+from .prediction import generate_caption, generate_captions

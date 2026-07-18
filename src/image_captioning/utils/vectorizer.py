@@ -1,12 +1,11 @@
 from collections import Counter
-from collections.abc import Callable
+from typing import Callable
 
 from keras.layers import TextVectorization
 
-from image_captioning.config import MIN_FREQ
-
 
 def build_vocab(captions: list[str], min_freq: int = 3) -> list[str]:
+
     freq_counter = Counter()
 
     for caption in captions:
@@ -22,13 +21,25 @@ def build_vocab(captions: list[str], min_freq: int = 3) -> list[str]:
     return vocab
 
 
-def create_vectorizer(
+def compute_max_caption_length(captions: list[str]) -> int:
+    return max(
+        len(caption.split())
+        for caption in captions
+    )
+
+
+def compute_vectorizer_output_sequence_length(
         captions: list[str],
         output_sequence_length_fn: Callable[[list[str]], int]
-) -> TextVectorization:
-    vocab = build_vocab(captions, min_freq=MIN_FREQ)
+) -> int:
+    return output_sequence_length_fn(captions)
 
-    output_sequence_length = output_sequence_length_fn(captions)
+
+
+def create_vectorizer(
+        vocabulary: list[str],
+        output_sequence_length: int
+) -> TextVectorization:
 
     return TextVectorization(
         max_tokens=None,
@@ -37,5 +48,5 @@ def create_vectorizer(
         output_mode="int",
         output_sequence_length=output_sequence_length,
         pad_to_max_tokens=False,
-        vocabulary=vocab,
+        vocabulary=vocabulary,
     )
