@@ -14,29 +14,13 @@ from image_captioning.config import (
 TFRecordExample: TypeAlias = tuple[str, list[int], list[int]]
 
 
-def create_tfrecord_datasets(
-    splits: dict[str, dict[str, list[str]]],
-    vectorizer: tf.keras.layers.TextVectorization,
-    output_paths: dict[str, Path],
-) -> None:
-    for split_name, output_path in output_paths.items():
-        split = splits[split_name]
-
-        records = create_records(split, vectorizer)
-
-        write_tfrecord(
-            records,
-            output_path=output_path,
-            total=count_records(split),
-            description=f"Creating {split_name}",
-        )
-
-
 def create_records(
     split: dict[str, list[str]],
     vectorizer: tf.keras.layers.TextVectorization,
 ) -> Iterator[TFRecordExample]:
+
     for image_id, captions in split.items():
+
         input_captions = [
             f"{START_TOKEN} {caption}"
             for caption in captions
@@ -70,6 +54,7 @@ def write_tfrecord(
 ) -> None:
 
     with tf.io.TFRecordWriter(str(output_path)) as writer:
+
         for (
             image_id,
             input_caption,
@@ -80,16 +65,18 @@ def write_tfrecord(
             desc=description,
             unit="record",
         ):
-            serialized_example = serialize_example(
-                image_id=image_id,
-                input_caption=input_caption,
-                target_caption=target_caption,
+            writer.write(
+                serialize_example(
+                    image_id=image_id,
+                    input_caption=input_caption,
+                    target_caption=target_caption,
+                )
             )
 
-            writer.write(serialized_example)
 
-
-def count_records(split: dict[str, list[str]]) -> int:
+def count_records(
+    split: dict[str, list[str]],
+) -> int:
     return sum(
         len(captions)
         for captions in split.values()
@@ -101,35 +88,35 @@ def serialize_example(
     input_caption: list[int],
     target_caption: list[int],
 ) -> bytes:
-    features = {
-        "image_id": _bytes_feature(image_id),
-        "input_caption": _int64_list_feature(input_caption),
-        "target_caption": _int64_list_feature(target_caption),
-    }
 
     example = tf.train.Example(
         features=tf.train.Features(
-            feature=features
+            feature={
+                "image_id": _bytes_feature(image_id),
+                "input_caption": _int64_list_feature(input_caption),
+                "target_caption": _int64_list_feature(target_caption),
+            }
         )
     )
 
     return example.SerializeToString()
 
 
-def _bytes_feature(value: str) -> tf.train.Feature:
+def _bytes_feature(
+    value: str,
+) -> tf.train.Feature:
     return tf.train.Feature(
         bytes_list=tf.train.BytesList(
-            value=[
-                value.encode("utf-8")
-            ]
+            value=[value.encode("utf-8")]
         )
     )
 
 
-def _int64_list_feature(values: list[int]) -> tf.train.Feature:
+def _int64_list_feature(
+    values: list[int],
+) -> tf.train.Feature:
     return tf.train.Feature(
         int64_list=tf.train.Int64List(
             value=values
         )
     )
-

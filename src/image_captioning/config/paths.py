@@ -22,6 +22,7 @@ FEATURES_FILE = DATA_DIR / "flickr8k_vgg16_14_14_512_features.npy"
 TRAIN_TF_RECORD_FILE = DATA_DIR / "train.tfrecord"
 VAL_TF_RECORD_FILE = DATA_DIR / "val.tfrecord"
 TEST_TF_RECORD_FILE = DATA_DIR / "test.tfrecord"
+LEFT_TF_RECORD_FILE = DATA_DIR / "leftovers.tfrecord"
 
 # RESOURCES
 
