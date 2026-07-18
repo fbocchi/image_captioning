@@ -10,8 +10,7 @@ from image_captioning.config import (
 )
 from image_captioning.prediction import generate_captions
 from image_captioning.utils import (
-    load_features,
-    load_test_split,
+    load_split_features,
     load_vectorizer,
     save_predictions,
 )
@@ -20,22 +19,26 @@ from image_captioning.utils import (
 MAX_CAPTION_LENGTH = 39
 
 
-def predict_captions_for_test_set(
+def load_test_image_features() -> dict[str, np.ndarray]:
+    return load_split_features(
+        features_path=FEATURES_FILE,
+        split_path=SPLITS_FILE,
+        split_name="test",
+    )
+
+
+def predict_captions(
     model,
-    test_split: dict[str, list[str]],
     feature_maps: dict[str, np.ndarray],
     vectorizer: keras.layers.TextVectorization,
     max_caption_length: int,
 ) -> dict[str, str]:
 
-    image_ids = []
-    feature_batch = []
-
-    for image_id in test_split:
-        image_ids.append(image_id)
-        feature_batch.append(feature_maps[image_id])
-
-    feature_batch = np.stack(feature_batch)
+    image_ids = list(feature_maps.keys())
+    feature_batch = np.stack([
+        feature_maps[image_id]
+        for image_id in image_ids
+    ])
 
     generated_captions = generate_captions(
         model=model,
@@ -46,7 +49,11 @@ def predict_captions_for_test_set(
 
     return {
         image_id: " ".join(caption)
-        for image_id, caption in zip(image_ids, generated_captions)
+        for image_id, caption in zip(
+            image_ids,
+            generated_captions,
+            strict=True,
+        )
     }
 
 
@@ -57,16 +64,14 @@ def main() -> None:
         compile=False,
     )
 
-    feature_maps = load_features(FEATURES_FILE)
-    test_split = load_test_split(SPLITS_FILE)
+    feature_maps = load_test_image_features()
     vectorizer = load_vectorizer(VECTORIZER_CONFIG_FILE)
 
-    predictions = predict_captions_for_test_set(
+    predictions = predict_captions(
         model=model,
-        test_split=test_split,
         feature_maps=feature_maps,
         vectorizer=vectorizer,
-        max_caption_length=MAX_CAPTION_LENGTH
+        max_caption_length=MAX_CAPTION_LENGTH,
     )
 
     save_predictions(

@@ -22,19 +22,20 @@ def load_split(path: Path, split_name: str) -> dict[str, list[str]]:
 
 
 def load_split_images(path: Path, split_name: str) -> list[str]:
+    return list(load_split(path, split_name))
+
+
+def load_split_captions(
+    path: Path,
+    split_name: str,
+) -> list[str]:
     split = load_split(path, split_name)
-    return list(split.keys())
 
-
-def load_split_captions(path: Path, split_name: str) -> list[str]:
-    split = load_split(path, split_name)
-
-    captions = []
-
-    for _, image_captions in split.items():
-        captions.extend(image_captions)
-
-    return captions
+    return [
+        caption
+        for captions in split.values()
+        for caption in captions
+    ]
 
 
 def load_vectorizer_config(path: Path) -> dict:
@@ -48,6 +49,17 @@ def load_vectorizer(path: Path) -> TextVectorization:
 def load_features(path: Path) -> dict[str, np.ndarray]:
     return np.load(path, allow_pickle=True).item()
 
+def load_split_features(
+    features_path: Path,
+    split_path: Path,
+    split_name: str,
+) -> dict[str, np.ndarray]:
+    split_image_ids = load_split_images(split_path, split_name)
+    features = load_features(features_path)
+    return {
+        image_id: features[image_id]
+        for image_id in split_image_ids
+    }
 
 def load_history(path: Path) -> dict[str, list[float]]:
     return _load_json(path)
