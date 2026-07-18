@@ -3,7 +3,7 @@ from image_captioning.config import (
     SPLITS_FILE,
     TEST_PREDICTIONS_FILE,
 )
-from image_captioning.evaluation import evaluate_test_captions
+from image_captioning.evaluation import evaluate_bleu
 from image_captioning.utils import (
     load_predictions,
     load_test_split,
@@ -22,11 +22,11 @@ def print_bleu_scores(scores: dict[str, float]) -> None:
 def main() -> None:
 
     predictions = load_predictions(TEST_PREDICTIONS_FILE)
-    test_split = load_test_split(SPLITS_FILE)
+    references = load_test_split(SPLITS_FILE)
 
-    scores = evaluate_test_captions(
+    scores = evaluate_bleu(
         predictions=predictions,
-        test_split=test_split,
+        references=references,
     )
 
     print_bleu_scores(scores)
