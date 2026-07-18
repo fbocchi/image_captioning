@@ -56,5 +56,5 @@ def load_bleu_scores(path: Path) -> dict[str, float]:
     return _load_json(path)
 
 
-def load_predictions(path: Path) -> dict[str, dict[str, str | list[str]]]:
+def load_predictions(path: Path) -> dict[str, str]:
     return _load_json(path)

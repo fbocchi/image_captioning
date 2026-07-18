@@ -1,59 +1,23 @@
-import keras
-
 from image_captioning.evaluation.bleu import evaluate_bleu
-from image_captioning.model import ShowAttendAndTell
 
 
-def evaluate_model(
-    model: ShowAttendAndTell,
+def evaluate_test_captions(
+    predictions: dict[str, str],
     test_split: dict[str, list[str]],
-    feature_maps: dict,
-    text_vectorization: keras.layers.TextVectorization,
-    max_caption_length: int,
-) -> tuple[
-    dict[str, float],
-    dict[str, dict[str, str | list[str]]]
-]:
-
-    captions = generate_captions(
-        model=model,
-        test_split=test_split,
-        feature_maps=feature_maps,
-        text_vectorization=text_vectorization,
-        max_caption_length=max_caption_length,
-    )
-
-    scores = evaluate_bleu(captions)
-
-    return scores, captions
-
-
-def generate_captions(
-    model: ShowAttendAndTell,
-    test_split: dict[str, list[str]],
-    feature_maps: dict,
-    text_vectorization: keras.layers.TextVectorization,
-    max_caption_length: int,
-) -> dict[str, dict[str, str | list[str]]]:
+) -> dict[str, float]:
 
     captions = {}
 
-    for image_id, references in test_split.items():
+    for image_id, generated in predictions.items():
 
-        if image_id not in feature_maps:
+        if image_id not in test_split:
             raise KeyError(
-                f'Image ID "{image_id}" is missing from the feature maps.'
+                f'Image ID "{image_id}" is missing from the test split.'
             )
 
-        generated = model.generate_caption(
-            feature_map=feature_maps[image_id],
-            vectorizer=text_vectorization,
-            max_caption_length=max_caption_length,
-        )
-
         captions[image_id] = {
-            "reference": references,
-            "generated": " ".join(generated),
+            "reference": test_split[image_id],
+            "generated": generated,
         }
 
-    return captions
+    return evaluate_bleu(captions)

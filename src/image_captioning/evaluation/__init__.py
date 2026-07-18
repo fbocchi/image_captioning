@@ -1,1 +1,1 @@
-from .evaluation import evaluate_model
+from .evaluation import evaluate_test_captions

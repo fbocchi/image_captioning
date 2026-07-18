@@ -30,7 +30,7 @@ def evaluate_bleu(
         "BLEU-3": corpus_bleu(
             references,
             hypotheses,
-            weights=(1/3, 1/3, 1/3, 0.0),
+            weights=(1 / 3, 1 / 3, 1 / 3, 0.0),
         ),
         "BLEU-4": corpus_bleu(
             references,

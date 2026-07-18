@@ -15,7 +15,7 @@ from image_captioning.utils import (
 from image_captioning.visualization import (
     plot_bleu_scores,
     plot_history,
-    show_predictions,
+    save_predictions,
 )
 
 
@@ -28,7 +28,7 @@ def main():
 
     plot_bleu_scores(bleu_scores, output_file=BLEU_SCORES_PNG_FILE)
 
-    show_predictions(
+    save_predictions(
         predictions=predictions,
         images_dir=IMAGES_DIR,
         number_of_examples=10,
