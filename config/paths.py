@@ -27,6 +27,7 @@ LEFT_TF_RECORD_FILE = DATA_DIR / "leftovers.tfrecord"
 # RESOURCES
 
 SPLITS_FILE = RESOURCES_DIR / "splits.json"
+NEW_SPLITS_FILE = RESOURCES_DIR / "new_splits.json"
 VECTORIZER_CONFIG_FILE = RESOURCES_DIR / "vectorizer_config.json"
 
 # RESULTS

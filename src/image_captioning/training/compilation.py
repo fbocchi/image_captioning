@@ -9,5 +9,4 @@ def compile_model(
         model: ShowAttendAndTell,
         optimizer: Optimizer
 ) -> None:
-
     model.compile(optimizer=optimizer, loss=masked_loss)

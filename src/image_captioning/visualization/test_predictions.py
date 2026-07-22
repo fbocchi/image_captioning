@@ -1,4 +1,5 @@
 from pathlib import Path
+import textwrap
 
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -24,37 +25,81 @@ def save_predictions(
 
         image_path = images_dir / f"{image_id}.jpg"
 
-        image = Image.open(image_path)
+        with Image.open(image_path) as image:
 
-        plt.figure(figsize=(8, 7))
+            fig, ax = plt.subplots(figsize=(8, 6))
 
-        plt.imshow(image)
-        plt.axis("off")
+            #
+            # Image
+            #
+            ax.imshow(image)
+            ax.axis("off")
 
-        plt.figtext(
-            0.02,
-            0.06,
-            f"Generated:\n{generated}",
-            fontsize=10,
-            wrap=True,
-        )
+            #
+            # Leave just enough room for the captions
+            #
+            fig.subplots_adjust(bottom=0.24)
 
-        if references is not None:
-
-            plt.figtext(
-                0.02,
-                0.01,
-                f"Reference:\n{references[image_id][0]}",
-                fontsize=10,
-                wrap=True,
+            #
+            # Generated caption
+            #
+            generated = textwrap.fill(
+                generated,
+                width=75,
             )
 
-        plt.tight_layout()
+            fig.text(
+                0.02,
+                0.16,
+                "Generated:",
+                fontsize=11,
+                fontweight="bold",
+                ha="left",
+                va="top",
+            )
 
-        plt.savefig(
-            output_dir / f"prediction_{index:02d}.png",
-            dpi=300,
-            bbox_inches="tight",
-        )
+            fig.text(
+                0.15,
+                0.16,
+                generated,
+                fontsize=11,
+                ha="left",
+                va="top",
+            )
 
-        plt.close()
+            #
+            # Reference caption
+            #
+            if references is not None:
+
+                reference = textwrap.fill(
+                    references[image_id][0],
+                    width=75,
+                )
+
+                fig.text(
+                    0.02,
+                    0.08,
+                    "Reference:",
+                    fontsize=11,
+                    fontweight="bold",
+                    ha="left",
+                    va="top",
+                )
+
+                fig.text(
+                    0.15,
+                    0.08,
+                    reference,
+                    fontsize=11,
+                    ha="left",
+                    va="top",
+                )
+
+            plt.savefig(
+                output_dir / f"prediction_{index:02d}.png",
+                dpi=300,
+                bbox_inches="tight",
+            )
+
+            plt.close(fig)

@@ -14,15 +14,16 @@ from .encoder import Encoder
 class ShowAttendAndTell(Model):
 
     def __init__(
-        self,
-        vocab_size: int,
-        attention_hidden_dim: int = 256,
-        embedding_dim: int = 256,
-        embedding_output_dropout_rate: float = 0.2,
-        decoder_hidden_dim: int = 256,
-        decoder_output_dropout_rate: float = 0.3,
-        encoder_output_dim: int = 256,
-        **kwargs,
+            self,
+            vocab_size: int,
+            attention_hidden_dim: int = 256,
+            embedding_dim: int = 256,
+            embedding_output_dropout_rate: float = 0.2,
+            decoder_hidden_dim: int = 256,
+            decoder_output_dropout_rate: float = 0.3,
+            encoder_output_dim: int = 256,
+            attention_regularization_weight: float = 0.001,
+            **kwargs,
     ):
         super().__init__(**kwargs)
 
@@ -35,6 +36,8 @@ class ShowAttendAndTell(Model):
 
         self.embedding_output_dropout_rate = embedding_output_dropout_rate
         self.decoder_output_dropout_rate = decoder_output_dropout_rate
+
+        self.attention_regularization_weight = attention_regularization_weight
 
         self.encoder = Encoder(
             output_dim=self.encoder_output_dim,
@@ -97,6 +100,7 @@ class ShowAttendAndTell(Model):
         h_t_1, c_t_1 = self.compute_initial_decoder_states(A)
 
         outputs = []
+        attention_weights = []
 
         T = captions.shape[1]
 
@@ -131,11 +135,53 @@ class ShowAttendAndTell(Model):
             )
 
             outputs.append(probs)
+            attention_weights.append(alpha_t)
 
             h_t_1 = h_t
             c_t_1 = c_t
 
-        return tf.stack(outputs, axis=1)
+        outputs = tf.stack(outputs, axis=1)
+        attention_weights = tf.stack(attention_weights, axis=1)
+
+        if training:
+            caption_mask = tf.cast(
+                captions != 0,
+                attention_weights.dtype,
+            )
+
+            caption_mask = caption_mask[..., None]
+
+            masked_attention_weights = (
+                    attention_weights * caption_mask
+            )
+
+            attention_loss = self.compute_attention_regularization_loss(
+                masked_attention_weights,
+            )
+
+            self.add_loss(
+                tf.cast(
+                    self.attention_regularization_weight,
+                    attention_loss.dtype,
+                ) * attention_loss
+            )
+
+        return outputs
+
+    def compute_initial_decoder_states(
+            self,
+            A: tf.Tensor,
+    ) -> tuple[tf.Tensor, tf.Tensor]:
+
+        mean_A = tf.reduce_mean(
+            A,
+            axis=1,
+        )
+
+        return (
+            self.init_h(mean_A),
+            self.init_c(mean_A),
+        )
 
     def decode_step(
             self,
@@ -162,19 +208,25 @@ class ShowAttendAndTell(Model):
 
         return z_t, alpha_t, h_t, c_t
 
-    def compute_initial_decoder_states(
-            self,
-            A: tf.Tensor,
-    ) -> tuple[tf.Tensor, tf.Tensor]:
+    @staticmethod
+    def compute_attention_regularization_loss(
+            attention_weights: tf.Tensor,
+    ) -> tf.Tensor:
 
-        mean_A = tf.reduce_mean(
-            A,
+        attention_per_region = tf.reduce_sum(
+            attention_weights,
             axis=1,
         )
 
-        return (
-            self.init_h(mean_A),
-            self.init_c(mean_A),
+        penalty = tf.square(
+            1.0 - attention_per_region
+        )
+
+        return tf.reduce_mean(
+            tf.reduce_sum(
+                penalty,
+                axis=1,
+            )
         )
 
     def generate_captions(
@@ -287,6 +339,7 @@ class ShowAttendAndTell(Model):
                 "encoder_output_dim": self.encoder_output_dim,
                 "embedding_output_dropout_rate": self.embedding_output_dropout_rate,
                 "decoder_output_dropout_rate": self.decoder_output_dropout_rate,
+                "attention_regularization_weight": self.attention_regularization_weight,
             }
         )
 

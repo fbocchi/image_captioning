@@ -13,19 +13,40 @@ def plot_bleu_scores(
         exist_ok=True,
     )
 
+    labels = list(scores.keys())
+    values = list(scores.values())
+
     plt.figure(figsize=(6, 4))
 
-    plt.bar(
-        scores.keys(),
-        scores.values(),
+    bars = plt.bar(
+        labels,
+        values,
+        edgecolor="black",
+        linewidth=1.0,
     )
 
-    plt.ylim(0, 1)
+    # Valore sopra ciascuna barra
+    for bar, value in zip(bars, values):
 
-    plt.title("BLEU Scores")
+        plt.text(
+            bar.get_x() + bar.get_width() / 2,
+            value + 0.015,
+            f"{value:.3f}",
+            ha="center",
+            va="bottom",
+            fontsize=10,
+        )
+
+    plt.ylim(0.0, 1.05)
+
+    plt.title("BLEU")
     plt.ylabel("Score")
 
-    plt.grid(axis="y")
+    plt.grid(
+        axis="y",
+        linestyle="--",
+        alpha=0.4,
+    )
 
     plt.tight_layout()
 

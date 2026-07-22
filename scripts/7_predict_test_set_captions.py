@@ -4,7 +4,8 @@ import keras
 from config import (
     BEST_MODEL_FILE,
     FEATURES_FILE,
-    SPLITS_FILE,
+    MAX_CAPTION_LEN,
+    NEW_SPLITS_FILE,
     TEST_PREDICTIONS_FILE,
     VECTORIZER_CONFIG_FILE,
 )
@@ -16,13 +17,10 @@ from image_captioning.utils import (
 )
 
 
-MAX_CAPTION_LENGTH = 39
-
-
 def load_test_image_features() -> dict[str, np.ndarray]:
     return load_split_features(
         features_path=FEATURES_FILE,
-        split_path=SPLITS_FILE,
+        split_path=NEW_SPLITS_FILE,
         split_name="test",
     )
 
@@ -71,7 +69,7 @@ def main() -> None:
         model=model,
         feature_maps=feature_maps,
         vectorizer=vectorizer,
-        max_caption_length=MAX_CAPTION_LENGTH,
+        max_caption_length=MAX_CAPTION_LEN + 2,
     )
 
     save_predictions(

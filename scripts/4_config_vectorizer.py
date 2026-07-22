@@ -2,14 +2,13 @@ from pathlib import Path
 
 from config import (
     END_TOKEN,
-    SPLITS_FILE,
+    MAX_CAPTION_LEN,
+    NEW_SPLITS_FILE,
     START_TOKEN,
-    VECTORIZER_CONFIG_FILE
+    VECTORIZER_CONFIG_FILE,
 )
 from image_captioning.utils import (
     build_vocab,
-    compute_max_caption_length,
-    compute_vectorizer_output_sequence_length,
     create_vectorizer,
     load_split_captions,
     save_vectorizer_config
@@ -28,20 +27,15 @@ def add_start_and_end_tokens(captions: list[str]) -> list[str]:
 
 
 def main() -> None:
-    captions = load_training_captions(SPLITS_FILE)
+    captions = load_training_captions(NEW_SPLITS_FILE)
 
     captions = add_start_and_end_tokens(captions)
 
     vocabulary = build_vocab(captions)
 
-    length = compute_vectorizer_output_sequence_length(
-        captions,
-        compute_max_caption_length
-    )
-
     vectorizer = create_vectorizer(
         vocabulary=vocabulary,
-        output_sequence_length=length
+        output_sequence_length=MAX_CAPTION_LEN + 2 # [START] ed [END]
     )
 
     print(f"Number of training captions: {len(captions)}")

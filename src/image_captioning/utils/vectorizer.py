@@ -35,7 +35,6 @@ def compute_vectorizer_output_sequence_length(
     return output_sequence_length_fn(captions)
 
 
-
 def create_vectorizer(
         vocabulary: list[str],
         output_sequence_length: int

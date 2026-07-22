@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from config import (
-    SPLITS_FILE,
+    NEW_SPLITS_FILE,
     LEFT_TF_RECORD_FILE,
     TRAIN_TF_RECORD_FILE,
     VAL_TF_RECORD_FILE,
@@ -51,7 +51,7 @@ def create_tfrecord_files(
 
 
 def main() -> None:
-    splits = load_splits(SPLITS_FILE)
+    splits = load_splits(NEW_SPLITS_FILE)
     vectorizer = load_vectorizer(VECTORIZER_CONFIG_FILE)
     create_tfrecord_files(
         splits=splits,
